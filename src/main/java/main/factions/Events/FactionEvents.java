@@ -1,5 +1,7 @@
 package main.factions.Events;
 
+import main.factions.Listeners.Faction;
+import main.factions.Listeners.FactionListener;
 import main.factions.Main;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
