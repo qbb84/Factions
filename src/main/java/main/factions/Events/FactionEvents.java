@@ -21,7 +21,6 @@ public class FactionEvents implements Listener {
 //                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("location", event.getBlock().getLocation());
 //                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("members", event.getPlayer().getName());
 //                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("members.size", size=size+1);
-//                Main.getMain().save();
         new FactionListener().addConfigSectionChildren(event.getBlock().getType().toString(), "location", event.getBlock().getLocation());
     }
 }
