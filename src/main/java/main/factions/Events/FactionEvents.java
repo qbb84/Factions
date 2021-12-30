@@ -17,24 +17,11 @@ public class FactionEvents implements Listener {
     @EventHandler
     public void onBreak(BlockBreakEvent event) throws IOException {
 
-        switch(event.getBlock().getType()){
-            case GRASS_BLOCK:
-                int size = 0;
-                Main.getMain().getCustomConfig().createSection(event.getBlock().getType().name());
-                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("location", event.getBlock().getLocation());
-                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("members", event.getPlayer().getName());
-                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("members.size", size=size+1);
-                Main.getMain().save();
-                event.getPlayer().sendMessage("sucsess.");
-                break;
-            case DIAMOND_BLOCK:
-                Main.getMain().getCustomConfig().createSection(event.getBlock().getType().toString());
-                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("location", event.getBlock().getLocation());
-                Main.getMain().save();
-                event.getPlayer().sendMessage("sucsess.");
-                break;
-            default:
-
-        }
+        new FactionListener().createFaction(Faction.CREATE, event.getPlayer(), event.getBlock().getType().toString());
+//                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("location", event.getBlock().getLocation());
+//                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("members", event.getPlayer().getName());
+//                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("members.size", size=size+1);
+//                Main.getMain().save();
+        new FactionListener().addConfigSectionChildren(event.getBlock().getType().toString(), "location", event.getBlock().getLocation());
     }
 }
