@@ -51,7 +51,7 @@ public class FactionListener {
     public List<String> getFactionMembers(Player player){
         return null;
     }
-
+//
     public synchronized void createConfigSection(String sectionNameParent) {
         //TODO Conditionals if !exist
         if(Main.getMain().getCustomConfig().getConfigurationSection(sectionNameParent) == null) {
