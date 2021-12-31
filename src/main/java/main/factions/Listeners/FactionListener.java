@@ -2,9 +2,8 @@ package main.factions.Listeners;
 
 import main.factions.Main;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.Configuration;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -12,12 +11,14 @@ public class FactionListener {
 
     // HashMap for each faction created upon creation ->
     // key = factionName, value is members in order of insertion, (1 will always == the leader.)
-    private final HashMap<String, LinkedHashSet<String>> faction = new HashMap<>();
+    private final HashMap<String, LinkedHashSet<String>> faction;
     //Array of each faction for internal use
     private final ArrayList<HashMap<String, LinkedHashSet<String>>> list = new ArrayList<>();
 
+
     public FactionListener(){
-        list.add(faction);
+       // list.add(faction);
+        faction = new HashMap<>();
     }
 
     //Save arraylist in members, and just add, make sure to always get array
@@ -34,17 +35,29 @@ public class FactionListener {
     }
 
     public void createFaction(Faction faction, Player player, String factionName)  {
+        LinkedHashSet<String> members = new LinkedHashSet<>();
+        members.add(player.getName());
         createConfigSection(factionName);
         addConfigSectionChildren(factionName, "leader.name", player.getName());
-        addConfigSectionChildren(factionName, "members", "null");
+        addConfigSectionChildren(factionName, "members", members.toArray());
 
     }
 
-    public void getFactionOfPlayer(Player player){
+    public String getFactionOfPlayer(@NotNull Player player){
+        for (String keys: Main.getMain().getCustomConfig().getConfigurationSection("").getKeys(false)) {
+            if(Main.getMain().getCustomConfig().getConfigurationSection(keys).get("leader.name").equals(player.getName()) ||
+            Main.getMain().getCustomConfig().getConfigurationSection(keys).get("members").equals(player.getName())){
+               return keys;
 
+            }
+
+        }
+        return "null";
     }
 
-    public void getFactionLeader(Player player){
+    public String getFactionLeader(Player player){
+        String factionOfPlayer = getFactionOfPlayer(player);
+        return (String) Main.getMain().getCustomConfig().getConfigurationSection(factionOfPlayer).get("leader.name");
 
     }
 
@@ -52,7 +65,6 @@ public class FactionListener {
         return null;
     }
     public synchronized void createConfigSection(String sectionNameParent) {
-        //TODO Conditionals if !exist
         if(Main.getMain().getCustomConfig().getConfigurationSection(sectionNameParent) == null) {
             Main.getMain().getCustomConfig().createSection(sectionNameParent);
             saveConfig();
