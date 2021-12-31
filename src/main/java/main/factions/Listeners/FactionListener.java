@@ -5,9 +5,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import javax.print.attribute.standard.JobKOctets;
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class FactionListener {
+
+    /*
+    TODO MAJOR CONDITIONALS!
+     */
 
     // HashMap for each faction created upon creation ->
     // key = factionName, value is members in order of insertion, (1 will always == the leader.)
@@ -22,32 +28,101 @@ public class FactionListener {
     }
 
     //Save arraylist in members, and just add, make sure to always get array
+    //TODO boolean checks if invited for the future
+    //TODO Check if player isn't in a Faction
     public void joinFaction(Faction faction, Player player, String factionName){
+            LinkedHashSet<String> members = this.faction.get(factionName);
+            if(!(members.contains(player.getName()))){
+                setMembers(player);
+
+                player.sendMessage(faction.getMessage() + factionName);
+            }else{
+            //Already in the same faction
+            }
 
     }
 
     public void leaveFaction(Faction faction, Player player){
-
+            getMembers(getFactionLeader(player)).remove(player.getName());
+            //TODO Put new data in faction hashmap
     }
 
+    //TODO Message loop through each player in faction, give a message
     public void disbandFaction(Faction faction, Player player){
+        if(player.getName().equals(getFactionLeader(player))){
+            String getFaction = getFactionOfPlayer(player);
 
+            Main.getMain().getCustomConfig().set(getFaction, null);
+
+             getMembers(getFaction).clear(); this.faction.get(getFaction).clear(); list.remove(getFaction);
+             //Test of members loop
+             for(String players : getMembers(getFactionOfPlayer(player))){
+                 if(players.equalsIgnoreCase(player.getName())){
+                     continue;
+                 }else {
+                     Bukkit.getPlayer(players).sendMessage(faction.getMessage() + "");
+                 }
+             }
+            saveConfig();
+        }
     }
 
     public void createFaction(Faction faction, Player player, String factionName)  {
-        LinkedHashSet<String> members = new LinkedHashSet<>();
-        members.add(player.getName());
-        createConfigSection(factionName);
-        addConfigSectionChildren(factionName, "leader.name", player.getName());
-        addConfigSectionChildren(factionName, "members", members.toArray());
+        if(Main.getMain().getCustomConfig().getConfigurationSection(factionName) == null) {
+            LinkedHashSet<String> members = new LinkedHashSet<>();
+            members.add(player.getName());
+            this.faction.put(factionName, members);
+            list.add(this.faction);
+
+            createConfigSection(factionName);
+            addConfigSectionChildren(factionName, "leader.name", player.getName());
+            addConfigSectionChildren(factionName, "members", members.toArray());
+            //TODO Default children
+        }else{
+        //Faction already exists
+        }
 
     }
 
+
+
+    public synchronized void createConfigSection(String sectionNameParent) {
+        if(Main.getMain().getCustomConfig().getConfigurationSection(sectionNameParent) == null) {
+            Main.getMain().getCustomConfig().createSection(sectionNameParent);
+            saveConfig();
+        }
+
+    }
+
+    public synchronized void addConfigSectionChildren(String sectionNameParent, String path, Object value){
+        //TODO Conditionals if !exist
+        if(Main.getMain().getCustomConfig().getConfigurationSection(sectionNameParent) != null) {
+            Objects.requireNonNull(Main.getMain().getCustomConfig().getConfigurationSection(sectionNameParent)).set(path, value);
+            saveConfig();
+        }
+
+    }
+    public void saveConfig(){
+        try {
+            Main.getMain().save();
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }finally{
+            Bukkit.getServer().getConsoleSender().sendMessage("Config successfully saved.");
+        }
+
+    }
+
+    public LinkedHashSet<String> getMembers(String factionName){
+        LinkedHashSet<String> members = this.faction.get(factionName);
+        return members;
+
+    }
     public String getFactionOfPlayer(@NotNull Player player){
         for (String keys: Main.getMain().getCustomConfig().getConfigurationSection("").getKeys(false)) {
             if(Main.getMain().getCustomConfig().getConfigurationSection(keys).get("leader.name").equals(player.getName()) ||
-            Main.getMain().getCustomConfig().getConfigurationSection(keys).get("members").equals(player.getName())){
-               return keys;
+                    Main.getMain().getCustomConfig().getConfigurationSection(keys).get("members").equals(player.getName())){
+                return keys;
 
             }
 
@@ -61,32 +136,13 @@ public class FactionListener {
 
     }
 
-    public List<String> getFactionMembers(Player player){
-        return null;
-    }
-    public synchronized void createConfigSection(String sectionNameParent) {
-        if(Main.getMain().getCustomConfig().getConfigurationSection(sectionNameParent) == null) {
-            Main.getMain().getCustomConfig().createSection(sectionNameParent);
-            saveConfig();
-        }
-
-    }
-
-    public synchronized void addConfigSectionChildren(String sectionNameParent, String path, Object value){
-        //TODO Conditionals if !exist
-            Objects.requireNonNull(Main.getMain().getCustomConfig().getConfigurationSection(sectionNameParent)).set(path, value);
-            saveConfig();
-
-    }
-    public void saveConfig(){
-        try {
-            Main.getMain().save();
-        }catch (Exception exception){
-            exception.printStackTrace();
-        }finally{
-            Bukkit.getServer().getConsoleSender().sendMessage("Config successfully saved.");
-        }
-
+    //TODO Test
+    public void setMembers(Player player){
+        LinkedHashSet<String> members = getMembers(getFactionOfPlayer(player));
+        members.add(player.getName());
+        this.faction.put(getFactionOfPlayer(player), members);
+        Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("members", members);
+        saveConfig();
     }
 
 
