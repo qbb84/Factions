@@ -15,6 +15,9 @@ public class FactionListener {
     TODO MAJOR CONDITIONALS!
      */
 
+    //TODO Save hashmaps to a config on disable, and load them from the config onenable. (collection memory is wiped on server end)
+    //TODO Test not having collections just config
+
     // HashMap for each faction created upon creation ->
     // key = factionName, value is members in order of insertion, (1 will always == the leader.)
     private final HashMap<String, LinkedHashSet<String>> faction;
@@ -44,6 +47,7 @@ public class FactionListener {
 
     public void leaveFaction(Faction faction, Player player){
             getMembers(getFactionLeader(player)).remove(player.getName());
+            //update config
             //TODO Put new data in faction hashmap
     }
 
@@ -70,8 +74,8 @@ public class FactionListener {
     public void createFaction(Faction faction, Player player, String factionName)  {
         if(Main.getMain().getCustomConfig().getConfigurationSection(factionName) == null) {
             LinkedHashSet<String> members = new LinkedHashSet<>();
-            members.add(player.getName());
             this.faction.put(factionName, members);
+
             list.add(this.faction);
 
             createConfigSection(factionName);
@@ -141,7 +145,7 @@ public class FactionListener {
         LinkedHashSet<String> members = getMembers(getFactionOfPlayer(player));
         members.add(player.getName());
         this.faction.put(getFactionOfPlayer(player), members);
-        Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("members", members);
+        Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("members", members.toArray());
         saveConfig();
     }
 
