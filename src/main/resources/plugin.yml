@@ -2,3 +2,6 @@ name: Factions
 version: ${project.version}
 main: main.factions.Main
 api-version: 1.17
+commands:
+  faction:
+    aliases: 'f'

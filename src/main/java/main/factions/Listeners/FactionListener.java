@@ -20,14 +20,12 @@ public class FactionListener {
 
     // HashMap for each faction created upon creation ->
     // key = factionName, value is members in order of insertion, (1 will always == the leader.)
-    private final HashMap<String, LinkedHashSet<String>> faction;
+    private final HashMap<String, LinkedHashSet<String>> faction = new HashMap<>();
     //Array of each faction for internal use
     private final ArrayList<HashMap<String, LinkedHashSet<String>>> list = new ArrayList<>();
 
 
     public FactionListener(){
-       // list.add(faction);
-        faction = new HashMap<>();
     }
 
     //Save arraylist in members, and just add, make sure to always get array

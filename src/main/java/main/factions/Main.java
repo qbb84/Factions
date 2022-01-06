@@ -1,5 +1,6 @@
 package main.factions;
 
+import main.factions.Commands.FactionCommands;
 import main.factions.Events.FactionEvents;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -28,6 +29,7 @@ public final class Main extends JavaPlugin {
         saveDefaultConfig();
 
         getServer().getPluginManager().registerEvents(new FactionEvents(), this);
+        getCommand("faction").setExecutor(new FactionCommands());
 
         main = this;
 
