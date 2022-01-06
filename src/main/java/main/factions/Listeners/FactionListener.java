@@ -147,5 +147,12 @@ public class FactionListener {
         saveConfig();
     }
 
+    public void setFaction(Faction faction, Player player){
+        switch (faction){
+            case CREATE, LEAVE, JOIN, DISBAND, PROMOTE, MENU -> player.sendMessage(faction.getMessage());
+
+        }
+    }
+
 
 }
