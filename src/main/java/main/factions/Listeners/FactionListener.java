@@ -2,6 +2,7 @@ package main.factions.Listeners;
 
 import main.factions.Main;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,7 +37,7 @@ public class FactionListener {
             if(!(members.contains(player.getName()))){
                 setMembers(player);
 
-                player.sendMessage(faction.getMessage() + factionName);
+                sendEventMessage(faction, player, factionName);
             }else{
             //Already in the same faction
             }
@@ -62,7 +63,7 @@ public class FactionListener {
                  if(players.equalsIgnoreCase(player.getName())){
                      continue;
                  }else {
-                     Bukkit.getPlayer(players).sendMessage(faction.getMessage() + "");
+                     sendEventMessage(faction, Bukkit.getPlayer(players));
                  }
              }
             saveConfig();
@@ -70,6 +71,7 @@ public class FactionListener {
     }
 
     public void createFaction(Faction faction, Player player, String factionName)  {
+        if(!getFactionOfPlayer(player).equalsIgnoreCase("null")) return;
         if(Main.getMain().getCustomConfig().getConfigurationSection(factionName) == null) {
             LinkedHashSet<String> members = new LinkedHashSet<>();
             this.faction.put(factionName, members);
@@ -81,7 +83,7 @@ public class FactionListener {
             addConfigSectionChildren(factionName, "members", members.toArray());
             //TODO Default children
         }else{
-        //Faction already exists
+           player.sendMessage(ChatColor.RED +""+ faction + " already exists!");
         }
 
     }
@@ -147,10 +149,16 @@ public class FactionListener {
         saveConfig();
     }
 
-    public void setFaction(Faction faction, Player player){
+    public void sendEventMessage(Faction faction, Player player){
         switch (faction){
             case CREATE, LEAVE, JOIN, DISBAND, PROMOTE, MENU -> player.sendMessage(faction.getMessage());
+        }
 
+    }
+
+    public void sendEventMessage(Faction faction, Player player, String extraMessage) {
+        switch (faction) {
+            case CREATE, LEAVE, JOIN, DISBAND, PROMOTE, MENU -> player.sendMessage(faction.getMessage() + extraMessage);
         }
     }
 

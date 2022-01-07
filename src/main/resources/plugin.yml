@@ -4,4 +4,6 @@ main: main.factions.Main
 api-version: 1.17
 commands:
   faction:
-    aliases: 'f'
+    description: Parent command.
+    usage: /f <create | leave | join | disband | promote | menu>
+    aliases: [f]
