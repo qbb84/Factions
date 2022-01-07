@@ -18,12 +18,5 @@ public class FactionEvents implements Listener {
     @EventHandler
     public void onBreak(BlockBreakEvent event) throws IOException {
 
-        new FactionListener().createFaction(Faction.CREATE, event.getPlayer(), event.getBlock().getType().toString());
-       Bukkit.broadcastMessage(new FactionListener().getFactionOfPlayer(event.getPlayer()));
-//                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("location", event.getBlock().getLocation());
-//                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("members", event.getPlayer().getName());
-//                Main.getMain().getCustomConfig().getConfigurationSection(event.getBlock().getType().toString()).set("members.size", size=size+1);
-        new FactionListener().addConfigSectionChildren(event.getBlock().getType().toString(), "location", event.getBlock().getLocation());
-        Bukkit.broadcastMessage(new FactionListener().getFactionLeader(event.getPlayer()));
     }
 }
