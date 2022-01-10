@@ -17,6 +17,7 @@ public class FactionEvents implements Listener {
 
     @EventHandler
     public void onBreak(BlockBreakEvent event) throws IOException {
+        event.getPlayer().sendMessage(new FactionListener().getFactionOfPlayer(event.getPlayer()));
 
     }
 }
