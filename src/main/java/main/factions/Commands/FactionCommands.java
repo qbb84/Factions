@@ -22,22 +22,24 @@ public class FactionCommands implements CommandExecutor {
 
             Player p = (Player) sender;
 
-            switch (args[0].toLowerCase()){
+            switch (args[0].toLowerCase()) {
                 case "create":
-                    if(args.length == 2) {
+                    if (args.length == 2) {
                         String factionName = args[1];
                         faction.createFaction(Faction.CREATE, p, factionName);
                         return true;
 
                     }
                 case "join":
-                    if(args.length == 2){
+                    if (args.length == 2) {
                         String factionName = args[1];
                         faction.joinFaction(Faction.JOIN, p, factionName);
                         return true;
                     }
                 case "leave":
                     faction.leaveFaction(Faction.LEAVE, p);
+                    return true;
+
             }
 
         }
