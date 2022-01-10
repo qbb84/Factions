@@ -12,6 +12,8 @@ import java.util.Locale;
 
 public class FactionCommands implements CommandExecutor {
 
+    FactionListener faction = new FactionListener();
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if(label.equalsIgnoreCase("faction")){
@@ -24,11 +26,18 @@ public class FactionCommands implements CommandExecutor {
                 case "create":
                     if(args.length == 2) {
                         String factionName = args[1];
-                        new FactionListener().createFaction(Faction.CREATE, p, factionName);
+                        faction.createFaction(Faction.CREATE, p, factionName);
                         return true;
 
                     }
-
+                case "join":
+                    if(args.length == 2){
+                        String factionName = args[1];
+                        faction.joinFaction(Faction.JOIN, p, factionName);
+                        return true;
+                    }
+                case "leave":
+                    faction.leaveFaction(Faction.LEAVE, p);
             }
 
         }

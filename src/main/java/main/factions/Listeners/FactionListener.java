@@ -4,6 +4,7 @@ import main.factions.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 
 import javax.print.attribute.standard.JobKOctets;
@@ -21,31 +22,32 @@ public class FactionListener {
 
     // HashMap for each faction created upon creation ->
     // key = factionName, value is members in order of insertion, (1 will always == the leader.)
-    private final HashMap<String, LinkedHashSet<String>> faction = new HashMap<>();
+    private final HashMap<String, LinkedHashSet<String>> faction;
     //Array of each faction for internal use
-    private final ArrayList<HashMap<String, LinkedHashSet<String>>> list = new ArrayList<>();
+    private final ArrayList<HashMap<String, LinkedHashSet<String>>> list;
 
 
     public FactionListener(){
+        this.faction = new HashMap<>();
+        list = new ArrayList<>();
     }
 
     //Save arraylist in members, and just add, make sure to always get array
     //TODO boolean checks if invited for the future
     //TODO Check if player isn't in a Faction
     public void joinFaction(Faction faction, Player player, String factionName){
-            LinkedHashSet<String> members = this.faction.get(factionName);
-            if(!(members.contains(player.getName()))){
-                setMembers(player);
-
+            if(!this.faction.get(factionName).contains(player.getName()) && Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null){
+                setMembers(player, true);
                 sendEventMessage(faction, player, factionName);
             }else{
-            //Already in the same faction
+            player.sendMessage(ChatColor.RED + "Whoops, you're already a member of that Faction!");
             }
 
     }
 
     public void leaveFaction(Faction faction, Player player){
-            getMembers(getFactionLeader(player)).remove(player.getName());
+            setMembers(player, false);
+            player.sendMessage(faction.getMessage() +" "+  getFactionOfPlayer(player));
             //update config
             //TODO Put new data in faction hashmap
     }
@@ -141,11 +143,17 @@ public class FactionListener {
     }
 
     //TODO Test
-    public void setMembers(Player player){
+    public void setMembers(Player player, boolean addOrRemove){
         LinkedHashSet<String> members = getMembers(getFactionOfPlayer(player));
-        members.add(player.getName());
-        this.faction.put(getFactionOfPlayer(player), members);
-        Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("members", members.toArray());
+        if(addOrRemove) {
+            members.add(player.getName());
+            this.faction.put(getFactionOfPlayer(player), members);
+            Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("members", members.toArray());
+        }else{
+            members.remove(player.getName());
+            this.faction.put(getFactionOfPlayer(player), members);
+            Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("members", members.toArray());
+        }
         saveConfig();
     }
 
