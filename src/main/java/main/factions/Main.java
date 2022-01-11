@@ -40,6 +40,7 @@ public final class Main extends JavaPlugin {
     @Override
     public void onDisable() {
         enableAndDisableMessage(false);
+        saveConfig();
 
     }
 
@@ -73,9 +74,10 @@ public final class Main extends JavaPlugin {
     }
 
 
-    public void save() throws IOException {
+    public void save() throws IOException, InvalidConfigurationException {
         getCustomConfig().save(customConfigFile);
-        this.reloadConfig();
+        getCustomConfig().load(customConfigFile);
+
     }
 
 }

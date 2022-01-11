@@ -37,18 +37,21 @@ public class FactionListener {
     //TODO boolean checks if invited for the future
     //TODO Check if player isn't in a Faction
     public void joinFaction(Faction faction, Player player, String factionName) {
-            if (Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null && getFactionOfPlayer(player).equalsIgnoreCase("null")) {
-                setMembers(player, factionName, true);
-                sendEventMessage(faction, player, factionName);
-            }else player.sendMessage(ChatColor.RED + "Whoops, you're already a member of a Faction!");
+            if (Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null) {
+                if (getFactionOfPlayer(player).equalsIgnoreCase("null")) {
+                    setMembers(player, factionName, true);
+                    sendEventMessage(faction, player, factionName);
+                } else player.sendMessage(ChatColor.RED + "Whoops, you're already a member of a Faction!");
+            }
 
     }
 
+    //TODO Fix leaving faction again
     public void leaveFaction(Faction faction, Player player) {
-        if(!getFactionOfPlayer(player).equalsIgnoreCase("null")) {
-            setMembers(player, false);
+        if(getMembers(getFactionOfPlayer(player)).contains(player.getName())) {
             player.sendMessage(faction.getMessage() + " " + getFactionOfPlayer(player));
-        }
+            setMembers(player, false);
+        }else player.sendMessage("err");
         //update config
         //TODO Put new data in faction hashmap
     }
@@ -158,32 +161,36 @@ public class FactionListener {
 
     }
 
+
     public LinkedHashSet<String> getMembers(String factionName) {
-            for(String members : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members")){
-                LinkedHashSet<String> hashSet = new LinkedHashSet<>();
-                hashSet.add(members);
-                return hashSet;
+
+        LinkedHashSet<String> hashSet = new LinkedHashSet<>();
+        if(Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null) {
+            if (Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members").size() > 0) {
+                for (String members : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members")) {
+                    hashSet.add(members.toString());
+                }
+            }
         }
 
-
-        return this.faction.get(factionName);
+        return hashSet;
 
     }
 
     //TODO Fix getting faction from a player member
-    public String getFactionOfPlayer(@NotNull Player player) {
+    public String getFactionOfPlayer(Player player) {
         for (String keys : Main.getMain().getCustomConfig().getConfigurationSection("").getKeys(false)) {
-            if (Main.getMain().getCustomConfig().getConfigurationSection(keys).get("leader.name").equals(player.getName())) {
+            if (Main.getMain().getCustomConfig().getConfigurationSection(keys).get("leader.name").equals(player.getName()) ||
+            Main.getMain().getCustomConfig().getConfigurationSection(keys).getStringList("members").contains(player.getName())) {
                 return keys;
             }
 
-            if (Main.getMain().getCustomConfig().getConfigurationSection(keys).getStringList("members").size() > 0) {
-                for (String member : Main.getMain().getCustomConfig().getConfigurationSection(keys).getStringList("members")) {
-                    if (member.equalsIgnoreCase(player.getName())) {
+            for(String members : Main.getMain().getCustomConfig().getConfigurationSection(keys).getStringList("members")){
+                    if(members.equalsIgnoreCase(player.getName())) {
                         return keys;
                     }
                 }
-            }
+
         }
         return "null";
     }
