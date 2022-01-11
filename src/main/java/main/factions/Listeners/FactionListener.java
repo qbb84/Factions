@@ -169,11 +169,13 @@ public class FactionListener {
             if (Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members").size() > 0) {
                 for (String members : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members")) {
                     hashSet.add(members.toString());
+                    return hashSet;
                 }
             }
-        }
-
+        }else return null;
         return hashSet;
+
+
 
     }
 
