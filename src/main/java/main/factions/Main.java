@@ -72,13 +72,10 @@ public final class Main extends JavaPlugin {
         }
     }
 
-    public<T> void setConfigPath(String path, T value){
-         getCustomConfig().set(path, value);
-         saveConfig();
-    }
 
     public void save() throws IOException {
         getCustomConfig().save(customConfigFile);
+        this.reloadConfig();
     }
 
 }

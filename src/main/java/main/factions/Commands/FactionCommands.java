@@ -40,6 +40,11 @@ public class FactionCommands implements CommandExecutor {
                     faction.leaveFaction(Faction.LEAVE, p);
                     return true;
 
+                case "who":
+                    p.sendMessage(faction.getFactionOfPlayer(p));
+                    p.sendMessage(faction.getMembers(faction.getFactionOfPlayer(p)).toString());
+                    return true;
+
             }
 
         }

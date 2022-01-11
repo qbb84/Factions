@@ -5,12 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
-
-import javax.print.attribute.standard.JobKOctets;
-import javax.swing.*;
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class FactionListener {
@@ -42,18 +37,18 @@ public class FactionListener {
     //TODO boolean checks if invited for the future
     //TODO Check if player isn't in a Faction
     public void joinFaction(Faction faction, Player player, String factionName) {
-        if (!this.faction.get(factionName).contains(player.getName()) && Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null) {
-            setMembers(player, factionName, true);
-            sendEventMessage(faction, player, factionName);
-        } else {
-            player.sendMessage(ChatColor.RED + "Whoops, you're already a member of that Faction!");
-        }
+            if (Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null && getFactionOfPlayer(player).equalsIgnoreCase("null")) {
+                setMembers(player, factionName, true);
+                sendEventMessage(faction, player, factionName);
+            }else player.sendMessage(ChatColor.RED + "Whoops, you're already a member of a Faction!");
 
     }
 
     public void leaveFaction(Faction faction, Player player) {
-        setMembers(player, false);
-        player.sendMessage(faction.getMessage() + " " + getFactionOfPlayer(player));
+        if(!getFactionOfPlayer(player).equalsIgnoreCase("null")) {
+            setMembers(player, false);
+            player.sendMessage(faction.getMessage() + " " + getFactionOfPlayer(player));
+        }
         //update config
         //TODO Put new data in faction hashmap
     }
@@ -91,6 +86,7 @@ public class FactionListener {
             createConfigSection(factionName);
             addConfigSectionChildren(factionName, "leader.name", player.getName());
             addConfigSectionChildren(factionName, "members", members.toArray());
+            saveConfig();
             //TODO Default children
         } else {
             player.sendMessage(ChatColor.RED + "" + faction + " already exists!");
@@ -163,6 +159,13 @@ public class FactionListener {
     }
 
     public LinkedHashSet<String> getMembers(String factionName) {
+            for(String members : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members")){
+                LinkedHashSet<String> hashSet = new LinkedHashSet<>();
+                hashSet.add(members);
+                return hashSet;
+        }
+
+
         return this.faction.get(factionName);
 
     }
@@ -174,9 +177,11 @@ public class FactionListener {
                 return keys;
             }
 
-            for(String member : Main.getMain().getCustomConfig().getStringList(keys+".members")){
-                if(member.equalsIgnoreCase(player.getName())) {
-                    return keys;
+            if (Main.getMain().getCustomConfig().getConfigurationSection(keys).getStringList("members").size() > 0) {
+                for (String member : Main.getMain().getCustomConfig().getConfigurationSection(keys).getStringList("members")) {
+                    if (member.equalsIgnoreCase(player.getName())) {
+                        return keys;
+                    }
                 }
             }
         }
