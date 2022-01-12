@@ -1,7 +1,7 @@
-package main.factions;
+package main.conquer;
 
-import main.factions.Commands.FactionCommands;
-import main.factions.Events.FactionEvents;
+import main.conquer.Commands.FactionCommands;
+import main.conquer.Events.FactionEvents;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;

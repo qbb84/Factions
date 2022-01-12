@@ -1,18 +1,18 @@
-package main.factions.Commands;
+package main.conquer.Commands;
 
-import main.factions.Listeners.Faction;
-import main.factions.Listeners.FactionListener;
+import main.conquer.Listeners.Faction;
+import main.conquer.Listeners.FactionListener;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Locale;
-
 public class FactionCommands implements CommandExecutor {
 
     FactionListener faction = new FactionListener();
+
+    CommandListeners listeners = new CommandListeners();
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -41,8 +41,15 @@ public class FactionCommands implements CommandExecutor {
                     return true;
 
                 case "who":
-                    p.sendMessage(faction.getFactionOfPlayer(p));
-                    p.sendMessage(faction.getMembers(faction.getFactionOfPlayer(p)).toString());
+                case "list":
+                    if(args.length == 1) {
+                        p.sendMessage(faction.getFactionOfPlayer(p));
+                        p.sendMessage(faction.getMembers(faction.getFactionOfPlayer(p)).toString());
+                    }else if (args.length == 2){
+                        String factionName = args[1];
+                        listeners.showFaction(factionName, p);
+
+                    }
                     return true;
 
             }

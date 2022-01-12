@@ -1,11 +1,10 @@
-package main.factions.Listeners;
+package main.conquer.Listeners;
 
-import main.factions.Main;
+import main.conquer.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 
 public class FactionListener {
@@ -23,14 +22,12 @@ public class FactionListener {
     //Array of each faction for internal use
     private final ArrayList<HashMap<String, LinkedHashSet<String>>> list;
 
-    private final HashMap<String, ArrayList<String>> invitedPlayers;
     //TODO Have each player that is invited to have a unique countdown. [Faction: [Player:Countdown]]
 
 
     public FactionListener() {
         this.faction = new HashMap<>();
         list = new ArrayList<>();
-        invitedPlayers = new HashMap<>();
     }
 
     //Save arraylist in members, and just add, make sure to always get array
@@ -97,41 +94,6 @@ public class FactionListener {
 
     }
 
-    public void invitePlayer(Faction faction, Player player, Player invitedPlayer) {
-        if (!invitedPlayers.get(getFactionOfPlayer(player)).contains(invitedPlayer.getUniqueId().toString())) {
-            return;
-        }
-        if (invitedPlayers.get(getFactionOfPlayer(player)) != null) {
-            ArrayList<String> invPlayers = invitedPlayers.get(getFactionOfPlayer(player));
-            invPlayers.add(invitedPlayer.getUniqueId().toString());
-            invitedPlayers.put(getFactionOfPlayer(player), invPlayers);
-        } else {
-            ArrayList<String> invPlayers = new ArrayList<>();
-            invPlayers.add(invitedPlayer.getUniqueId().toString());
-            invitedPlayers.put(getFactionOfPlayer(player), invPlayers);
-        }
-
-        final int[] i = {180};
-        ArrayList<String> invPlayers = invitedPlayers.get(getFactionOfPlayer(player));
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (!invPlayers.contains(invitedPlayer.getUniqueId().toString())) return;
-                this.cancel();
-
-                i[0]--;
-
-                if (i[0] == 0) {
-                    invPlayers.remove(invitedPlayer.getUniqueId().toString());
-                    invitedPlayers.put(getFactionOfPlayer(player), invPlayers);
-                    this.cancel();
-                }
-            }
-        }.runTaskTimerAsynchronously(Main.getMain(), 0, 20);
-
-    }
-
 
     public synchronized void createConfigSection(String sectionNameParent) {
         if (Main.getMain().getCustomConfig().getConfigurationSection(sectionNameParent) == null) {
@@ -177,6 +139,10 @@ public class FactionListener {
 
 
 
+    }
+
+    public boolean factionExists(String factionName){
+        return Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null;
     }
 
     //TODO Fix getting faction from a player member

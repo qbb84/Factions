@@ -1,6 +1,6 @@
 name: Factions
 version: ${project.version}
-main: main.factions.Main
+main: main.conquer.Main
 api-version: 1.17
 commands:
   faction:

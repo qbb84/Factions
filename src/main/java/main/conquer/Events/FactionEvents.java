@@ -1,9 +1,5 @@
-package main.factions.Events;
+package main.conquer.Events;
 
-import main.factions.Listeners.Faction;
-import main.factions.Listeners.FactionListener;
-import main.factions.Main;
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
