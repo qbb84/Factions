@@ -1,4 +1,4 @@
-package main.factions.Listeners;
+package main.conquer.Listeners;
 
 import org.bukkit.ChatColor;
 
