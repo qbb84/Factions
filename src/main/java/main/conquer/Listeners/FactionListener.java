@@ -5,7 +5,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 
 public class FactionListener {
 
@@ -24,17 +27,23 @@ public class FactionListener {
 
     //TODO Have each player that is invited to have a unique countdown. [Faction: [Player:Countdown]]
 
+    /*
+    TODO For faction allies and enemy.
+    TODO 1. You will need to send someone an ally request which expires after 24hrs, and the command has a 1 minute cooldown.
+    TODO 2. If the ally request is accepted then you will be their ally, and they will be yours. (If they were an enemy that'll  be removed)
+    TODO 3. If they enemy you then the ally is removed from you and the enemy is shown only for them.
+    TODO 4. Each faction can have different enemies.
+     */
+
 
     public FactionListener() {
         this.faction = new HashMap<>();
         list = new ArrayList<>();
     }
 
-    //Save arraylist in members, and just add, make sure to always get array
     //TODO boolean checks if invited for the future
-    //TODO Check if player isn't in a Faction
     public void joinFaction(Faction faction, Player player, String factionName) {
-            if (Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null) {
+        if (Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null) {
                 if (getFactionOfPlayer(player).equalsIgnoreCase("null")) {
                     setMembers(player, factionName, true);
                     sendEventMessage(faction, player, factionName);
@@ -43,14 +52,11 @@ public class FactionListener {
 
     }
 
-    //TODO Fix leaving faction again
     public void leaveFaction(Faction faction, Player player) {
         if(getMembers(getFactionOfPlayer(player)).contains(player.getName())) {
             player.sendMessage(faction.getMessage() + " " + getFactionOfPlayer(player));
             setMembers(player, false);
         }else player.sendMessage("err");
-        //update config
-        //TODO Put new data in faction hashmap
     }
 
     //TODO Message loop through each player in faction, give a message
@@ -75,10 +81,13 @@ public class FactionListener {
         }
     }
 
+    //TODO update set methods
     public void createFaction(Faction faction, Player player, String factionName) {
         if (!getFactionOfPlayer(player).equalsIgnoreCase("null")) return;
         if (Main.getMain().getCustomConfig().getConfigurationSection(factionName) == null) {
             LinkedHashSet<String> members = new LinkedHashSet<>();
+            LinkedHashSet<String> allies = new LinkedHashSet<>();
+            LinkedHashSet<String> enemies = new LinkedHashSet<>();
             this.faction.put(factionName, members);
 
             list.add(this.faction);
@@ -86,6 +95,14 @@ public class FactionListener {
             createConfigSection(factionName);
             addConfigSectionChildren(factionName, "leader.name", player.getName());
             addConfigSectionChildren(factionName, "members", members.toArray());
+            addConfigSectionChildren(factionName, "allies", allies.toArray());
+            addConfigSectionChildren(factionName, "enemies", enemies.toArray());
+            addConfigSectionChildren(factionName, "description", "Empty");
+            addConfigSectionChildren(factionName, "settings.joining", false);
+            addConfigSectionChildren(factionName, "settings.undersiege", false);
+            addConfigSectionChildren(factionName, "settings.attackable", false);
+            addConfigSectionChildren(factionName, "settings.size", members.size() + 1);
+
             saveConfig();
             //TODO Default children
         } else {
@@ -134,14 +151,150 @@ public class FactionListener {
                     return hashSet;
                 }
             }
-        }else return null;
+        } else return null;
         return hashSet;
-
 
 
     }
 
-    public boolean factionExists(String factionName){
+    public LinkedHashSet<String> getMembersOnline(String factionName) {
+        LinkedHashSet<String> hashSet = new LinkedHashSet<>();
+        if (Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null) {
+            String leader = Main.getMain().getCustomConfig().getConfigurationSection(factionName).getString("leader.name");
+            String leaderWithSymbol = "\u265A" + leader;
+            if (Bukkit.getPlayer(leader) != null) hashSet.add(leaderWithSymbol);
+
+            if (Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members").size() > 0) {
+                for (String members : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members")) {
+                    if (Bukkit.getPlayer(members) != null) {
+                        hashSet.add(members);
+                        return hashSet;
+
+                    }
+                }
+            }
+        } else return null;
+        return hashSet;
+
+
+    }
+
+    public LinkedHashSet<String> getMembersOffline(String factionName) {
+        LinkedHashSet<String> hashSet = new LinkedHashSet<>();
+        if (Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null) {
+            String leader = Main.getMain().getCustomConfig().getConfigurationSection(factionName).get("leader.name").toString();
+            String leaderWithSymbol = "\u265A" + leader;
+            if (Bukkit.getPlayer(leader) == null) hashSet.add(leaderWithSymbol);
+            if (Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members").size() > 0) {
+                for (String members : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members")) {
+                    if (Bukkit.getPlayer(members) == null) {
+                        hashSet.add(members.toString());
+                        return hashSet;
+
+                    }
+                }
+            }
+        } else return null;
+        return hashSet;
+
+
+    }
+
+    public LinkedHashSet<String> getAllies(String factionName) {
+        LinkedHashSet<String> hashSet = new LinkedHashSet<>();
+        if (factionExists(factionName)) {
+            if (!Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("allies").isEmpty()) {
+                for (String allies : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("allies")) {
+                    hashSet.add(allies);
+                    return hashSet;
+                }
+            }
+        }
+
+        return hashSet;
+    }
+
+    public LinkedHashSet<String> getEnemies(String factionName) {
+        LinkedHashSet<String> hashSet = new LinkedHashSet<>();
+        if (factionExists(factionName)) {
+            if (!Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("enemies").isEmpty()) {
+                for (String allies : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("enemies")) {
+                    hashSet.add(allies);
+                    return hashSet;
+                }
+            }
+        }
+
+        return hashSet;
+    }
+
+    public void removeEnemy(Player player, String factionName) {
+        if (factionExists(factionName)) {
+            if (getEnemies(getFactionOfPlayer(player)).contains(factionName)) {
+                LinkedHashSet<String> enemies = getEnemies(getFactionOfPlayer(player));
+                enemies.remove(factionName);
+                Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("enemies", enemies.toArray());
+                player.sendMessage(ChatColor.AQUA + "You have removed " + ChatColor.RED + factionName + ChatColor.AQUA + " as an " + ChatColor.RED + "Enemy");
+                saveConfig();
+            }
+        }
+    }
+
+    public void removeAlly(Player player, String factionName) {
+        if (factionExists(factionName)) {
+            if (getAllies(getFactionOfPlayer(player)).contains(factionName)) {
+                LinkedHashSet<String> allies = getAllies(getFactionOfPlayer(player));
+                allies.remove(factionName);
+                Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("allies", allies.toArray());
+                player.sendMessage(ChatColor.AQUA + "You have removed " + ChatColor.GREEN + factionName + ChatColor.AQUA + " as an " + ChatColor.GREEN + "Ally!");
+                saveConfig();
+            }
+        }
+    }
+
+    public void setAllies(Player player, String factionName) {
+        if (factionExists(factionName)) {
+            if (!getFactionOfPlayer(player).equalsIgnoreCase(factionName)) {
+                if (!getAllies(getFactionOfPlayer(player)).contains(factionName)) {
+                    if (getEnemies(getFactionOfPlayer(player)).contains(factionName)) {
+                        player.sendMessage(ChatColor.AQUA + "Please remove " + ChatColor.RED + factionName + ChatColor.AQUA + " as an " + ChatColor.RED + "Enemy" + ChatColor.AQUA
+                                + " before setting them as an " + ChatColor.GREEN + " Ally!");
+                        return;
+                    }
+                    LinkedHashSet<String> allies = getAllies(getFactionOfPlayer(player));
+                    allies.add(factionName);
+                    Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("allies", allies.toArray());
+                    player.sendMessage(ChatColor.AQUA + "You have added " + ChatColor.GREEN + factionName + ChatColor.AQUA + " as an " + ChatColor.GREEN + "Ally!");
+                    saveConfig();
+                }
+
+            }
+        }
+    }
+
+    public void setEnemies(Player player, String factionName) {
+        if (factionExists(factionName)) {
+            if (!getFactionOfPlayer(player).equalsIgnoreCase(factionName)) {
+                if (!getEnemies(getFactionOfPlayer(player)).contains(factionName))
+                    if (getAllies(getFactionOfPlayer(player)).contains(factionName)) {
+                        player.sendMessage(ChatColor.AQUA + "Please remove " + ChatColor.GREEN + factionName + ChatColor.AQUA + " as an " + ChatColor.GREEN + "Ally" + ChatColor.AQUA
+                                + " before setting them as an" + ChatColor.RED + " Enemy!");
+                        return;
+                    }
+                getAllies(factionName).remove(factionName);
+                LinkedHashSet<String> enemies = getEnemies(getFactionOfPlayer(player));
+                enemies.add(factionName);
+                Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("enemies", enemies.toArray());
+                player.sendMessage(ChatColor.AQUA + "You have added " + ChatColor.GREEN + factionName + ChatColor.AQUA + " as an " + ChatColor.RED + " Enemy!");
+                saveConfig();
+
+
+            }
+        }
+    }
+
+
+    public boolean factionExists(String factionName) {
         return Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null;
     }
 
@@ -164,7 +317,7 @@ public class FactionListener {
     }
 
     public String getFactionLeader(String faction) {
-        return (String) Main.getMain().getCustomConfig().getConfigurationSection(faction).get("leader.name");
+        return Main.getMain().getCustomConfig().getConfigurationSection(faction).getString("leader.name");
 
     }
 
@@ -172,6 +325,12 @@ public class FactionListener {
         String factionOfPlayer = getFactionOfPlayer(player);
         return (String) Main.getMain().getCustomConfig().getConfigurationSection(factionOfPlayer).get("leader.name");
 
+    }
+
+    public void setDescription(Player player, StringBuilder builder) {
+        Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("description", builder.toString() + "...");
+        player.sendMessage("Set description to" + builder);
+        saveConfig();
     }
 
     public void setMembers(Player player, boolean addOrRemove) {
