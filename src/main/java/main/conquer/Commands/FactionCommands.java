@@ -104,6 +104,16 @@ public class FactionCommands implements CommandExecutor {
                         }
 
                     }
+                case "open":
+                    if (args.length == 1) {
+                        faction.setClosedOrOpen(faction.getFactionOfPlayer(p), p, true);
+                        return true;
+                    }
+                case "close":
+                    if (args.length == 1) {
+                        faction.setClosedOrOpen(faction.getFactionOfPlayer(p), p, false);
+                        return true;
+                    }
 
             }
 

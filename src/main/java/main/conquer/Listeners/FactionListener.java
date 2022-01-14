@@ -30,9 +30,13 @@ public class FactionListener {
     /*
     TODO For faction allies and enemy.
     TODO 1. You will need to send someone an ally request which expires after 24hrs, and the command has a 1 minute cooldown.
-    TODO 2. If the ally request is accepted then you will be their ally, and they will be yours. (If they were an enemy that'll  be removed)
+    TODO 2. If the ally request is accepted then you will be their ally, and they will be yours. (If they were an enemy that'll  be removed) (faction.allyrequests)
     TODO 3. If they enemy you then the ally is removed from you and the enemy is shown only for them.
     TODO 4. Each faction can have different enemies.
+
+    --
+
+    TODO FACTION RANKS
      */
 
 
@@ -41,22 +45,22 @@ public class FactionListener {
         list = new ArrayList<>();
     }
 
-    //TODO boolean checks if invited for the future
+    //TODO add invite and also check if open/closed
     public void joinFaction(Faction faction, Player player, String factionName) {
         if (Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null) {
-                if (getFactionOfPlayer(player).equalsIgnoreCase("null")) {
-                    setMembers(player, factionName, true);
-                    sendEventMessage(faction, player, factionName);
-                } else player.sendMessage(ChatColor.RED + "Whoops, you're already a member of a Faction!");
-            }
+            if (getFactionOfPlayer(player).equalsIgnoreCase("null")) {
+                setMembers(player, factionName, true);
+                sendEventMessage(faction, player, factionName);
+            } else player.sendMessage(ChatColor.RED + "Whoops, you're already a member of a Faction!");
+        }
 
     }
 
     public void leaveFaction(Faction faction, Player player) {
-        if(getMembers(getFactionOfPlayer(player)).contains(player.getName())) {
+        if (getMembers(getFactionOfPlayer(player)).contains(player.getName())) {
             player.sendMessage(faction.getMessage() + " " + getFactionOfPlayer(player));
             setMembers(player, false);
-        }else player.sendMessage("err");
+        } else player.sendMessage("err");
     }
 
     //TODO Message loop through each player in faction, give a message
@@ -103,6 +107,7 @@ public class FactionListener {
             addConfigSectionChildren(factionName, "settings.attackable", false);
             addConfigSectionChildren(factionName, "settings.size", members.size() + 1);
 
+
             saveConfig();
             //TODO Default children
         } else {
@@ -144,7 +149,7 @@ public class FactionListener {
     public LinkedHashSet<String> getMembers(String factionName) {
 
         LinkedHashSet<String> hashSet = new LinkedHashSet<>();
-        if(Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null) {
+        if (Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null) {
             if (Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members").size() > 0) {
                 for (String members : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members")) {
                     hashSet.add(members.toString());
@@ -293,6 +298,31 @@ public class FactionListener {
         }
     }
 
+    public void setClosedOrOpen(String faction, Player player, boolean openOrClose) {
+        if (getFactionOfPlayer(player).equalsIgnoreCase("null")) {
+            player.sendMessage(ChatColor.RED + "You must be in a faction to use this command.");
+            return;
+        } else if (!getFactionLeader(getFactionOfPlayer(player)).equalsIgnoreCase(player.getName())) {
+            player.sendMessage(ChatColor.RED + "You must be a faction leader to use this command.");
+            return;
+        }
+        boolean joining = Main.getMain().getCustomConfig().getConfigurationSection(faction).getBoolean("settings.joining");
+
+        if (Main.getMain().getCustomConfig().getConfigurationSection(faction).getBoolean("settings.joining") == openOrClose) {
+            String openOrClosed = (joining) ? ChatColor.GREEN + "Open" : ChatColor.RED + "Closed";
+            player.sendMessage(ChatColor.AQUA + "Joining is already set to " + openOrClosed);
+            return;
+        }
+
+        Main.getMain().getCustomConfig().getConfigurationSection(faction).set("settings.joining", openOrClose);
+        saveConfig();
+
+        String openOrClosed = (Main.getMain().getCustomConfig().getConfigurationSection(faction).getBoolean("settings.joining")) ? ChatColor.GREEN + "Open" : ChatColor.RED + "Closed";
+        player.sendMessage(ChatColor.AQUA + "Joining set to " + openOrClosed);
+
+
+    }
+
 
     public boolean factionExists(String factionName) {
         return Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null;
@@ -302,15 +332,15 @@ public class FactionListener {
     public String getFactionOfPlayer(Player player) {
         for (String keys : Main.getMain().getCustomConfig().getConfigurationSection("").getKeys(false)) {
             if (Main.getMain().getCustomConfig().getConfigurationSection(keys).get("leader.name").equals(player.getName()) ||
-            Main.getMain().getCustomConfig().getConfigurationSection(keys).getStringList("members").contains(player.getName())) {
+                    Main.getMain().getCustomConfig().getConfigurationSection(keys).getStringList("members").contains(player.getName())) {
                 return keys;
             }
 
-            for(String members : Main.getMain().getCustomConfig().getConfigurationSection(keys).getStringList("members")){
-                    if(members.equalsIgnoreCase(player.getName())) {
-                        return keys;
-                    }
+            for (String members : Main.getMain().getCustomConfig().getConfigurationSection(keys).getStringList("members")) {
+                if (members.equalsIgnoreCase(player.getName())) {
+                    return keys;
                 }
+            }
 
         }
         return "null";
