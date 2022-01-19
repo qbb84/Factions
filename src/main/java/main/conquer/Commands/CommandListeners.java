@@ -30,6 +30,7 @@ public class CommandListeners extends FactionListener {
             commandSender.sendMessage(ChatColor.RED + "That faction doesn't exist!");
             return;
         }
+
         String chatDescription = Main.getMain().getCustomConfig().getConfigurationSection(factionName).getString("description");
         String factionSize = Main.getMain().getCustomConfig().getConfigurationSection(factionName).getString("settings.size");
 
@@ -55,17 +56,17 @@ public class CommandListeners extends FactionListener {
         commandSender.sendMessage("");
         CenteredChatMessage.sendCenteredMessage(commandSender, ChatColor.AQUA + "" + ChatColor.BOLD + "\u23F4 Members \u23F5");
         if (onlinePlayers.size() != 0) {
-            commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Online:" + ChatColor.GOLD + " (" + onlinePlayers.size() + ") " + ChatColor.GREEN + Arrays.asList(onlinePlayers).iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
+            commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Online:" + ChatColor.GOLD + " (" + onlinePlayers.size() + 1 + ") " + ChatColor.GREEN + Arrays.asList(onlinePlayers).iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
         } else
             commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Online:" + ChatColor.GOLD + ChatColor.GREEN + " None");
         if (offlinePlayers.size() != 0) {
-            commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Offline:" + ChatColor.GOLD + " (" + offlinePlayers.size() + ") " + ChatColor.GREEN + Arrays.asList(offlinePlayers).iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
+            commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Offline:" + ChatColor.GOLD + " (" + offlinePlayers.size() + 1 + ") " + ChatColor.GREEN + Arrays.asList(offlinePlayers).iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
         } else
             commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Offline:" + ChatColor.GOLD + ChatColor.GREEN + " None");
         commandSender.sendMessage("");
         CenteredChatMessage.sendCenteredMessage(commandSender, ChatColor.AQUA + "" + ChatColor.BOLD + "\u23F4 Relationship \u23F5");
-        commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Allies: " + ChatColor.GREEN + Arrays.asList(allies).stream().iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
-        commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Enemies: " + ChatColor.RED + Arrays.asList(enemies).stream().iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
+        commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Allies: " + ChatColor.GREEN + Arrays.asList(allies).iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
+        commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Enemies: " + ChatColor.RED + Arrays.asList(enemies).iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
 
         commandSender.sendMessage("");
         CenteredChatMessage.sendCenteredMessage(commandSender, ChatColor.AQUA + "" + ChatColor.BOLD + "\u23F4 Extra \u23F5");
@@ -74,6 +75,11 @@ public class CommandListeners extends FactionListener {
         commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Total Members: " + ChatColor.GREEN + factionSize);
         CenteredChatMessage.sendCenteredMessage(commandSender, ChatColor.YELLOW + "" + ChatColor.UNDERLINE + "\u239D____________________________________________________\u23A0");
         commandSender.sendMessage("");
+
+
+        for (String player : onlinePlayers) {
+            commandSender.sendMessage(player);
+        }
 
 
     }

@@ -1,7 +1,7 @@
 package main.conquer;
 
-import lombok.SneakyThrows;
 import main.conquer.Commands.FactionCommands;
+import main.conquer.Commands.cooldowns.CommandCooldown;
 import main.conquer.Events.FactionEvents;
 import main.conquer.Listeners.FactionListener;
 import org.bukkit.ChatColor;
@@ -27,19 +27,21 @@ public final class Main extends JavaPlugin {
     private FactionListener listener = new FactionListener();
 
 
-    @SneakyThrows
     @Override
     public void onEnable() {
         enableAndDisableMessage(true);
+        main = this;
+
         createCustomConfig();
         saveDefaultConfig();
 
         getServer().getPluginManager().registerEvents(new FactionEvents(), this);
         getCommand("faction").setExecutor(new FactionCommands());
 
-        main = this;
 
         loadAllyRequestMap();
+
+        CommandCooldown.getC1ass().startCountdown();
 
 
     }
@@ -55,7 +57,7 @@ public final class Main extends JavaPlugin {
         return main;
     }
 
-    public void enableAndDisableMessage(boolean isOn){
+    public void enableAndDisableMessage(boolean isOn) {
         this.isOn = isOn;
         getServer().getConsoleSender().sendMessage(text);
     }
@@ -66,7 +68,7 @@ public final class Main extends JavaPlugin {
     }
 
     private void createCustomConfig() {
-         customConfigFile = new File(getDataFolder(), "config.yml");
+        customConfigFile = new File(getDataFolder(), "config.yml");
         if (!customConfigFile.exists()) {
             customConfigFile.getParentFile().mkdirs();
             saveResource("config.yml", false);
@@ -100,5 +102,6 @@ public final class Main extends JavaPlugin {
             }
         }
     }
+
 
 }
