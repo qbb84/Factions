@@ -1,12 +1,16 @@
 package main.conquer.Listeners;
 
 import lombok.Getter;
+import main.conquer.Commands.cooldowns.CommandCooldown;
 import main.conquer.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 
 public class FactionListener {
 
@@ -20,11 +24,12 @@ public class FactionListener {
     private final HashMap<String, LinkedHashSet<String>> faction;
     //Array of each faction for internal use
     private final ArrayList<HashMap<String, LinkedHashSet<String>>> list;
-    //
-    @Getter
-    private HashMap<UUID, Long> commandCooldown;
+
     @Getter
     private HashMap<String, ArrayList<String>> allyRequests;
+
+    private static FactionListener factionListener = new FactionListener();
+
 
     //TODO Have each player that is invited to have a unique countdown. [Faction: [Player:Countdown]]
 
@@ -46,7 +51,6 @@ public class FactionListener {
     public FactionListener() {
         this.faction = new HashMap<>();
         list = new ArrayList<>();
-        commandCooldown = new HashMap<>();
         allyRequests = new HashMap<>();
     }
 
@@ -293,72 +297,8 @@ public class FactionListener {
         }
     }
 
-    public void setAllyRequests(Player player, String factionName) {
-        if (getFactionOfPlayer(player) == "null") {
-            return;
-        }
-
-        if (!factionExists(factionName)) {
-            player.sendMessage("That faction doesn't exist");
-            return;
-        }
-        if (getFactionOfPlayer(player).equalsIgnoreCase(factionName)) {
-            player.sendMessage("You cannot ally your own faction!");
-            return;
-        }
-
-        Player factionLeader = (Bukkit.getPlayer(getFactionLeader(factionName)) != null) ? Bukkit.getPlayer(getFactionLeader(factionName)) : null;
-
-        if (getAllies(getFactionOfPlayer(player)).contains(factionName)) {
-            player.sendMessage("You are already allied.");
-            return;
-        }
-
-        if (this.getAllyRequests().get(factionName) == null) {
-            ArrayList<String> factionRequests = new ArrayList<>();
-
-            this.allyRequests.put(factionName, factionRequests);
-
-
-        }
-        if (this.getAllyRequests().get(getFactionOfPlayer(player)) == null) {
-            ArrayList<String> factionRequests1 = new ArrayList<>();
-            this.allyRequests.put(getFactionOfPlayer(player), factionRequests1);
-        }
-
-        if (this.allyRequests.get(factionName).contains(getFactionOfPlayer(player))) {
-            player.sendMessage(ChatColor.RED + " Pleas wait, you have already sent a request to the faction " + factionName);
-        }
-        if (!this.getAllyRequests().get(getFactionOfPlayer(player)).contains(factionName)) {
-            ArrayList<String> factionRequests = this.allyRequests.get(factionName);
-            factionRequests.add(getFactionOfPlayer(player));
-            this.allyRequests.put(factionName, factionRequests);
-
-            player.sendMessage("You have sent an ally request to " + factionName.toString());
-            player.sendMessage(getAllyRequests().keySet().iterator().next().toString() + " : " + getAllyRequests().values().iterator().next().toString());
-
-            if (factionLeader != null) {
-                factionLeader.sendMessage(getFactionOfPlayer(player) + " has requested to ally!");
-            }
-            return;
-
-        }
-        if (this.allyRequests.get(getFactionOfPlayer(player)).contains(factionName)) {
-            ArrayList<String> requestedFactionRequests = this.allyRequests.get(factionName);
-            ArrayList<String> playerFactionRequests = this.allyRequests.get(getFactionOfPlayer(player));
-            requestedFactionRequests.remove(getFactionOfPlayer(player));
-            playerFactionRequests.remove(factionName);
-            this.allyRequests.put(factionName, requestedFactionRequests);
-            this.allyRequests.put(getFactionOfPlayer(player), playerFactionRequests);
-
-            setAllies(player, factionName);
-
-
-            if (factionLeader != null) {
-                factionLeader.sendMessage("You are now allies with " + factionName);
-            }
-            return;
-        }
+    public static FactionListener getFactionListener() {
+        return factionListener;
     }
 
     public void setEnemies(Player player, String factionName) {
@@ -514,5 +454,87 @@ public class FactionListener {
         }
     }
 
+    public void setAllyRequests(Player player, String factionName) {
+        if (getFactionOfPlayer(player) == "null") {
+            return;
+        }
 
+        if (!factionExists(factionName)) {
+            player.sendMessage("That faction doesn't exist");
+            return;
+        }
+        if (getFactionOfPlayer(player).equalsIgnoreCase(factionName)) {
+            player.sendMessage("You cannot ally your own faction!");
+            return;
+        }
+
+        Player factionLeader = (Bukkit.getPlayer(getFactionLeader(factionName)) != null) ? Bukkit.getPlayer(getFactionLeader(factionName)) : null;
+
+        if (getAllies(getFactionOfPlayer(player)).contains(factionName)) {
+            player.sendMessage("You are already allied.");
+            return;
+        }
+
+        if (this.getAllyRequests().get(factionName) == null) {
+            ArrayList<String> factionRequests = new ArrayList<>();
+
+            this.allyRequests.put(factionName, factionRequests);
+
+
+        }
+
+        if (CommandCooldown.getC1ass().commandCooldown.get(factionName) != null && !CommandCooldown.getC1ass().commandCooldown.get(factionName).containsKey(getFactionOfPlayer(player))) {
+            ArrayList<String> requestedFactionRequests = this.allyRequests.get(factionName);
+            requestedFactionRequests.remove(getFactionOfPlayer(player));
+            this.allyRequests.put(factionName, requestedFactionRequests);
+        }
+
+        if (this.getAllyRequests().get(getFactionOfPlayer(player)) == null) {
+            ArrayList<String> factionRequests1 = new ArrayList<>();
+            this.allyRequests.put(getFactionOfPlayer(player), factionRequests1);
+        }
+
+        if (this.allyRequests.get(factionName).contains(getFactionOfPlayer(player))) {
+            player.sendMessage(ChatColor.RED + "You have already sent a request to the faction " + factionName);
+            String minutesOrSeconds = ((CommandCooldown.getC1ass().commandCooldown.get(factionName).get(getFactionOfPlayer(player)) > 60)) ? "minutes" : "seconds";
+            int getTime = ((CommandCooldown.getC1ass().commandCooldown.get(factionName).get(getFactionOfPlayer(player)) > 60)) ?
+                    (CommandCooldown.getC1ass().commandCooldown.get(factionName).get(getFactionOfPlayer(player)) / 60 + 1) : (CommandCooldown.getC1ass().commandCooldown.get(factionName).get(getFactionOfPlayer(player)));
+            player.sendMessage(ChatColor.RED + "Your request will timeout in " + getTime + " " + minutesOrSeconds);
+            return;
+        }
+        if (!this.getAllyRequests().get(getFactionOfPlayer(player)).contains(factionName)) {
+            ArrayList<String> factionRequests = this.allyRequests.get(factionName);
+            factionRequests.add(getFactionOfPlayer(player));
+            this.allyRequests.put(factionName, factionRequests);
+
+            player.sendMessage("You have sent an ally request to " + factionName.toString());
+            player.sendMessage(getAllyRequests().keySet().iterator().next().toString() + " : " + getAllyRequests().values().iterator().next().toString());
+
+
+            CommandCooldown.getC1ass().addCooldown(factionName, getFactionOfPlayer(player), 300);
+
+
+            if (factionLeader != null) {
+                factionLeader.sendMessage(getFactionOfPlayer(player) + " has requested to ally!");
+            }
+            return;
+
+        }
+        if (this.allyRequests.get(getFactionOfPlayer(player)).contains(factionName)) {
+            ArrayList<String> requestedFactionRequests = this.allyRequests.get(factionName);
+            ArrayList<String> playerFactionRequests = this.allyRequests.get(getFactionOfPlayer(player));
+            requestedFactionRequests.remove(getFactionOfPlayer(player));
+            playerFactionRequests.remove(factionName);
+            this.allyRequests.put(factionName, requestedFactionRequests);
+            this.allyRequests.put(getFactionOfPlayer(player), playerFactionRequests);
+
+            setAllies(player, factionName);
+
+
+            if (factionLeader != null) {
+                factionLeader.sendMessage("You are now allies with " + factionName);
+            }
+            return;
+        }
+    }
 }
