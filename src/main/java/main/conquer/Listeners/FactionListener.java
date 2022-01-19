@@ -1,14 +1,12 @@
 package main.conquer.Listeners;
 
+import lombok.Getter;
 import main.conquer.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Objects;
+import java.util.*;
 
 public class FactionListener {
 
@@ -16,14 +14,17 @@ public class FactionListener {
     TODO MAJOR CONDITIONALS!
      */
 
-    //TODO Save hashmaps to a config on disable, and load them from the config onenable. (collection memory is wiped on server end)
-    //TODO Test not having collections just config
 
     // HashMap for each faction created upon creation ->
     // key = factionName, value is members in order of insertion, (1 will always == the leader.)
     private final HashMap<String, LinkedHashSet<String>> faction;
     //Array of each faction for internal use
     private final ArrayList<HashMap<String, LinkedHashSet<String>>> list;
+    //
+    @Getter
+    private HashMap<UUID, Long> commandCooldown;
+    @Getter
+    private HashMap<String, ArrayList<String>> allyRequests;
 
     //TODO Have each player that is invited to have a unique countdown. [Faction: [Player:Countdown]]
 
@@ -34,6 +35,8 @@ public class FactionListener {
     TODO 3. If they enemy you then the ally is removed from you and the enemy is shown only for them.
     TODO 4. Each faction can have different enemies.
 
+    //TODO FACTION ALLY
+
     --
 
     TODO FACTION RANKS
@@ -43,14 +46,18 @@ public class FactionListener {
     public FactionListener() {
         this.faction = new HashMap<>();
         list = new ArrayList<>();
+        commandCooldown = new HashMap<>();
+        allyRequests = new HashMap<>();
     }
 
     //TODO add invite and also check if open/closed
     public void joinFaction(Faction faction, Player player, String factionName) {
         if (Main.getMain().getCustomConfig().getConfigurationSection(factionName) != null) {
             if (getFactionOfPlayer(player).equalsIgnoreCase("null")) {
-                setMembers(player, factionName, true);
-                sendEventMessage(faction, player, factionName);
+                if (getJoining(factionName)) {
+                    setMembers(player, factionName, true);
+                    sendEventMessage(faction, player, factionName);
+                } else player.sendMessage("This faction is invite only.");
             } else player.sendMessage(ChatColor.RED + "Whoops, you're already a member of a Faction!");
         }
 
@@ -92,8 +99,9 @@ public class FactionListener {
             LinkedHashSet<String> members = new LinkedHashSet<>();
             LinkedHashSet<String> allies = new LinkedHashSet<>();
             LinkedHashSet<String> enemies = new LinkedHashSet<>();
+            ArrayList<String> request = new ArrayList<>();
             this.faction.put(factionName, members);
-
+            allyRequests.put(factionName, request);
             list.add(this.faction);
 
             createConfigSection(factionName);
@@ -261,15 +269,23 @@ public class FactionListener {
         if (factionExists(factionName)) {
             if (!getFactionOfPlayer(player).equalsIgnoreCase(factionName)) {
                 if (!getAllies(getFactionOfPlayer(player)).contains(factionName)) {
-                    if (getEnemies(getFactionOfPlayer(player)).contains(factionName)) {
-                        player.sendMessage(ChatColor.AQUA + "Please remove " + ChatColor.RED + factionName + ChatColor.AQUA + " as an " + ChatColor.RED + "Enemy" + ChatColor.AQUA
-                                + " before setting them as an " + ChatColor.GREEN + " Ally!");
-                        return;
-                    }
                     LinkedHashSet<String> allies = getAllies(getFactionOfPlayer(player));
+                    LinkedHashSet<String> requestedAllies = getAllies(factionName);
                     allies.add(factionName);
+                    requestedAllies.add(getFactionOfPlayer(player));
                     Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("allies", allies.toArray());
+                    Main.getMain().getCustomConfig().getConfigurationSection(factionName).set("allies", requestedAllies.toArray());
                     player.sendMessage(ChatColor.AQUA + "You have added " + ChatColor.GREEN + factionName + ChatColor.AQUA + " as an " + ChatColor.GREEN + "Ally!");
+
+                    if (getEnemies(factionName).contains(getFactionOfPlayer(player)) || getEnemies(getFactionOfPlayer(player)).contains(factionName)) {
+                        LinkedHashSet<String> enemies = getEnemies(getFactionOfPlayer(player));
+                        LinkedHashSet<String> otherFactionEnemy = getEnemies(factionName);
+                        enemies.remove(factionName);
+                        otherFactionEnemy.remove(getFactionOfPlayer(player));
+                        Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("enemies", enemies.toArray());
+                        Main.getMain().getCustomConfig().getConfigurationSection(factionName).set("enemies", otherFactionEnemy.toArray());
+                    }
+
                     saveConfig();
                 }
 
@@ -277,26 +293,109 @@ public class FactionListener {
         }
     }
 
+    public void setAllyRequests(Player player, String factionName) {
+        if (getFactionOfPlayer(player) == "null") {
+            return;
+        }
+
+        if (!factionExists(factionName)) {
+            player.sendMessage("That faction doesn't exist");
+            return;
+        }
+        if (getFactionOfPlayer(player).equalsIgnoreCase(factionName)) {
+            player.sendMessage("You cannot ally your own faction!");
+            return;
+        }
+
+        Player factionLeader = (Bukkit.getPlayer(getFactionLeader(factionName)) != null) ? Bukkit.getPlayer(getFactionLeader(factionName)) : null;
+
+        if (getAllies(getFactionOfPlayer(player)).contains(factionName)) {
+            player.sendMessage("You are already allied.");
+            return;
+        }
+
+        if (this.getAllyRequests().get(factionName) == null) {
+            ArrayList<String> factionRequests = new ArrayList<>();
+
+            this.allyRequests.put(factionName, factionRequests);
+
+
+        }
+        if (this.getAllyRequests().get(getFactionOfPlayer(player)) == null) {
+            ArrayList<String> factionRequests1 = new ArrayList<>();
+            this.allyRequests.put(getFactionOfPlayer(player), factionRequests1);
+        }
+
+        if (this.allyRequests.get(factionName).contains(getFactionOfPlayer(player))) {
+            player.sendMessage(ChatColor.RED + " Pleas wait, you have already sent a request to the faction " + factionName);
+        }
+        if (!this.getAllyRequests().get(getFactionOfPlayer(player)).contains(factionName)) {
+            ArrayList<String> factionRequests = this.allyRequests.get(factionName);
+            factionRequests.add(getFactionOfPlayer(player));
+            this.allyRequests.put(factionName, factionRequests);
+
+            player.sendMessage("You have sent an ally request to " + factionName.toString());
+            player.sendMessage(getAllyRequests().keySet().iterator().next().toString() + " : " + getAllyRequests().values().iterator().next().toString());
+
+            if (factionLeader != null) {
+                factionLeader.sendMessage(getFactionOfPlayer(player) + " has requested to ally!");
+            }
+            return;
+
+        }
+        if (this.allyRequests.get(getFactionOfPlayer(player)).contains(factionName)) {
+            ArrayList<String> requestedFactionRequests = this.allyRequests.get(factionName);
+            ArrayList<String> playerFactionRequests = this.allyRequests.get(getFactionOfPlayer(player));
+            requestedFactionRequests.remove(getFactionOfPlayer(player));
+            playerFactionRequests.remove(factionName);
+            this.allyRequests.put(factionName, requestedFactionRequests);
+            this.allyRequests.put(getFactionOfPlayer(player), playerFactionRequests);
+
+            setAllies(player, factionName);
+
+
+            if (factionLeader != null) {
+                factionLeader.sendMessage("You are now allies with " + factionName);
+            }
+            return;
+        }
+    }
+
     public void setEnemies(Player player, String factionName) {
         if (factionExists(factionName)) {
             if (!getFactionOfPlayer(player).equalsIgnoreCase(factionName)) {
-                if (!getEnemies(getFactionOfPlayer(player)).contains(factionName))
-                    if (getAllies(getFactionOfPlayer(player)).contains(factionName)) {
-                        player.sendMessage(ChatColor.AQUA + "Please remove " + ChatColor.GREEN + factionName + ChatColor.AQUA + " as an " + ChatColor.GREEN + "Ally" + ChatColor.AQUA
-                                + " before setting them as an" + ChatColor.RED + " Enemy!");
-                        return;
+                if (!getEnemies(getFactionOfPlayer(player)).contains(factionName)) {
+                    if (!getAllies(factionName).contains(getFactionOfPlayer(player)) && !getAllies(getFactionOfPlayer(player)).contains(factionName)) {
+                        LinkedHashSet<String> enemies = getEnemies(getFactionOfPlayer(player));
+                        enemies.add(factionName);
+                        Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("enemies", enemies.toArray());
+                        player.sendMessage(ChatColor.AQUA + "You have added " + ChatColor.GREEN + factionName + ChatColor.AQUA + " as an " + ChatColor.RED + " Enemy!");
+
+                        saveConfig();
+                    } else {
+                        LinkedHashSet<String> requestedfactionAllies = getAllies(factionName);
+                        requestedfactionAllies.remove(getFactionOfPlayer(player));
+                        LinkedHashSet<String> sendersFaction = getAllies(getFactionOfPlayer(player));
+                        sendersFaction.remove(factionName);
+
+                        LinkedHashSet<String> enemies = getEnemies(getFactionOfPlayer(player));
+                        enemies.add(factionName);
+                        Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("allies", sendersFaction.toArray());
+                        Main.getMain().getCustomConfig().getConfigurationSection(factionName).set("allies", requestedfactionAllies.toArray());
+                        Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("enemies", enemies.toArray());
+                        saveConfig();
+
+                        player.sendMessage(ChatColor.AQUA + "You have added " + ChatColor.GREEN + factionName + ChatColor.AQUA + " as an " + ChatColor.RED + " Enemy!");
+                        if (Bukkit.getPlayer(getFactionLeader(factionName)) != null) {
+                            Bukkit.getPlayer(getFactionLeader(factionName)).sendMessage(getFactionOfPlayer(player) + " has made you an enemy!");
+                        }
                     }
-                getAllies(factionName).remove(factionName);
-                LinkedHashSet<String> enemies = getEnemies(getFactionOfPlayer(player));
-                enemies.add(factionName);
-                Main.getMain().getCustomConfig().getConfigurationSection(getFactionOfPlayer(player)).set("enemies", enemies.toArray());
-                player.sendMessage(ChatColor.AQUA + "You have added " + ChatColor.GREEN + factionName + ChatColor.AQUA + " as an " + ChatColor.RED + " Enemy!");
-                saveConfig();
-
-
+                }
             }
+
         }
     }
+
 
     public void setClosedOrOpen(String faction, Player player, boolean openOrClose) {
         if (getFactionOfPlayer(player).equalsIgnoreCase("null")) {
@@ -344,6 +443,10 @@ public class FactionListener {
 
         }
         return "null";
+    }
+
+    public boolean getJoining(String factionName) {
+        return Main.getMain().getCustomConfig().getConfigurationSection(factionName).getBoolean("settings.joining");
     }
 
     public String getFactionLeader(String faction) {

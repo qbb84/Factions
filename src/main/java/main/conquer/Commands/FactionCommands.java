@@ -79,7 +79,7 @@ public class FactionCommands implements CommandExecutor {
                 case "ally":
                     if (args.length == 2) {
                         String factionName = args[1];
-                        faction.setAllies(p, factionName);
+                        faction.setAllyRequests(p, factionName);
                         return true;
                     }
 

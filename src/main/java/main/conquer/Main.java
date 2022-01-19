@@ -1,7 +1,9 @@
 package main.conquer;
 
+import lombok.SneakyThrows;
 import main.conquer.Commands.FactionCommands;
 import main.conquer.Events.FactionEvents;
+import main.conquer.Listeners.FactionListener;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -10,6 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public final class Main extends JavaPlugin {
 
@@ -21,7 +24,10 @@ public final class Main extends JavaPlugin {
 
     private static Main main;
 
+    private FactionListener listener = new FactionListener();
 
+
+    @SneakyThrows
     @Override
     public void onEnable() {
         enableAndDisableMessage(true);
@@ -33,6 +39,7 @@ public final class Main extends JavaPlugin {
 
         main = this;
 
+        loadAllyRequestMap();
 
 
     }
@@ -78,6 +85,20 @@ public final class Main extends JavaPlugin {
         getCustomConfig().save(customConfigFile);
         getCustomConfig().load(customConfigFile);
 
+    }
+
+    public void loadAllyRequestMap() {
+        for (String keyName : getCustomConfig().getConfigurationSection("").getKeys(false)) {
+            ArrayList<String> list = new ArrayList<>();
+            listener.getAllyRequests().put(keyName, list);
+            getServer().getConsoleSender().sendMessage(keyName);
+
+            if (listener.getAllyRequests().get(keyName).isEmpty()) {
+                getServer().getConsoleSender().sendMessage("Empty");
+            } else {
+                getServer().getConsoleSender().sendMessage(listener.getAllyRequests().get(keyName).iterator().next());
+            }
+        }
     }
 
 }
