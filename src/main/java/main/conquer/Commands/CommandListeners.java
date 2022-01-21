@@ -56,11 +56,11 @@ public class CommandListeners extends FactionListener {
         commandSender.sendMessage("");
         CenteredChatMessage.sendCenteredMessage(commandSender, ChatColor.AQUA + "" + ChatColor.BOLD + "\u23F4 Members \u23F5");
         if (onlinePlayers.size() != 0) {
-            commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Online:" + ChatColor.GOLD + " (" + onlinePlayers.size() + 1 + ") " + ChatColor.GREEN + Arrays.asList(onlinePlayers).iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
+            commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Online:" + ChatColor.GOLD + " (" + onlinePlayers.size() + ") " + ChatColor.GREEN + Arrays.asList(onlinePlayers).iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
         } else
             commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Online:" + ChatColor.GOLD + ChatColor.GREEN + " None");
         if (offlinePlayers.size() != 0) {
-            commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Offline:" + ChatColor.GOLD + " (" + offlinePlayers.size() + 1 + ") " + ChatColor.GREEN + Arrays.asList(offlinePlayers).iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
+            commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Offline:" + ChatColor.GOLD + " (" + offlinePlayers.size() + ") " + ChatColor.GREEN + Arrays.asList(offlinePlayers).iterator().next().toString().replaceAll("\\]", "").replaceAll("\\[", ""));
         } else
             commandSender.sendMessage(ChatColor.YELLOW + "\u2023 Players Offline:" + ChatColor.GOLD + ChatColor.GREEN + " None");
         commandSender.sendMessage("");

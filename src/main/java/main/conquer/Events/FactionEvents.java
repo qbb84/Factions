@@ -23,9 +23,5 @@ public class FactionEvents implements Listener {
             event.getPlayer().sendMessage(entry.getKey() + " : " + entry.getValue());
         }
 
-
-        event.getPlayer().sendMessage(listener.getMembers(listener.getFactionOfPlayer(event.getPlayer())).toString());
-        event.getPlayer().sendMessage(listener.getMembersOnline(listener.getFactionOfPlayer(event.getPlayer())).toString());
-        event.getPlayer().sendMessage(listener.getMembers1(listener.getFactionOfPlayer(event.getPlayer())).toString());
     }
 }

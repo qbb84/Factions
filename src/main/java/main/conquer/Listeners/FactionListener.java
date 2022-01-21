@@ -157,14 +157,6 @@ public class FactionListener {
 
     }
 
-    public LinkedHashSet getMembers1(String factionName) {
-        LinkedHashSet<String> m = new LinkedHashSet<>();
-        for (int i = 0; i <= Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members").size() - 1; ++i) {
-            m.add(Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members").get(i));
-        }
-        return m;
-    }
-
 
     public LinkedHashSet<String> getMembers(String factionName) {
         LinkedHashSet<String> hashSet = new LinkedHashSet<>();
@@ -189,7 +181,6 @@ public class FactionListener {
             if (Bukkit.getPlayer(leader) != null) {
                 hashSet.add(leaderWithSymbol);
             }
-
                 for (String members : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("members")) {
                     if (Bukkit.getPlayer(members) != null) {
                         hashSet.add(members);
@@ -226,10 +217,7 @@ public class FactionListener {
         LinkedHashSet<String> hashSet = new LinkedHashSet<>();
         if (factionExists(factionName)) {
             if (!Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("allies").isEmpty()) {
-                for (String allies : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("allies")) {
-                    hashSet.add(allies);
-                    return hashSet;
-                }
+                hashSet.addAll(Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("allies"));
             }
         }
 
@@ -240,10 +228,7 @@ public class FactionListener {
         LinkedHashSet<String> hashSet = new LinkedHashSet<>();
         if (factionExists(factionName)) {
             if (!Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("enemies").isEmpty()) {
-                for (String allies : Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("enemies")) {
-                    hashSet.add(allies);
-                    return hashSet;
-                }
+                hashSet.addAll(Main.getMain().getCustomConfig().getConfigurationSection(factionName).getStringList("enemies"));
             }
         }
 
@@ -512,7 +497,7 @@ public class FactionListener {
             factionRequests.add(getFactionOfPlayer(player));
             this.allyRequests.put(factionName, factionRequests);
 
-            player.sendMessage("You have sent an ally request to " + factionName.toString());
+            player.sendMessage("You have sent an ally request to " + factionName);
             player.sendMessage(getAllyRequests().keySet().iterator().next().toString() + " : " + getAllyRequests().values().iterator().next().toString());
 
 
