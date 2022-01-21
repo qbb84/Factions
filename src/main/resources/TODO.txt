@@ -1,0 +1,8 @@
+TODO
+
+1. Ally requests. every ally request add the requesters faction to the desired factions ally list
+2. Notify the owner that a faction has requested to ally, and they have 3 minutes to accept
+3. If they accept the ally then add eachothers faction the allies group in the configs.
+4. If you enemy an ally faction, then it will be removed from allies and changed to enemies for you, and the enemied faction allies would have your faction removed from it
+3. After 3 minutes delete the faction from the requested faction list
+4. Add a cooldown to the faction ally command by creating a commandCooldown object.
