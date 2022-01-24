@@ -10,26 +10,35 @@ public class CommandCooldown {
 
     //TODO Use generics
 
-    private static final CommandCooldown c1ass = new CommandCooldown();
     public HashMap<String, HashMap<String, Integer>> commandCooldown;
     private HashMap<String, Integer> cooldowns;
 
+    private static CommandCooldown cooldown = new CommandCooldown();
+
     public CommandCooldown() {
         this.commandCooldown = new HashMap<>();
-        this.cooldowns = new HashMap<>();
     }
 
-    public CommandCooldown(HashMap<String, HashMap<String, Integer>> commandCooldown) {
+    public CommandCooldown(HashMap<String, HashMap<String, Integer>> commandCooldown, HashMap<String, Integer> cooldowns) {
         this.commandCooldown = commandCooldown;
+        this.cooldowns = cooldowns;
     }
 
-    public static CommandCooldown getC1ass() {
-        return c1ass;
+    public static CommandCooldown getCooldown() {
+        return cooldown;
     }
 
     public void addCooldown(String mainKey, String key, Integer value) {
-        cooldowns.put(key, value);
-        commandCooldown.put(mainKey, cooldowns);
+        if (commandCooldown.get(mainKey) == null) {
+            this.cooldowns = new HashMap<>();
+            cooldowns.put(key, value);
+            commandCooldown.put(mainKey, cooldowns);
+            return;
+        }
+        HashMap<String, Integer> getMap = commandCooldown.get(mainKey);
+        getMap.put(key, value);
+        commandCooldown.put(mainKey, getMap);
+
 
     }
 
@@ -51,5 +60,15 @@ public class CommandCooldown {
             }
         }.runTaskTimerAsynchronously(Main.getMain(), 0, 20);
 
+    }
+
+    public void removeAndUpdate(String mainkey, String keyToRemove) {
+        HashMap<String, Integer> getMap = commandCooldown.get(mainkey);
+        for (Map.Entry<String, Integer> entry : getMap.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(keyToRemove)) {
+                getMap.remove(entry.getKey(), entry.getValue());
+            }
+        }
+        commandCooldown.put(mainkey, getMap);
     }
 }

@@ -52,6 +52,7 @@ public class FactionListener {
         this.faction = new HashMap<>();
         list = new ArrayList<>();
         allyRequests = new HashMap<>();
+
     }
 
     //TODO add invite and also check if open/closed
@@ -470,10 +471,10 @@ public class FactionListener {
 
             this.allyRequests.put(factionName, factionRequests);
 
-
         }
 
-        if (CommandCooldown.getC1ass().commandCooldown.get(factionName) != null && !CommandCooldown.getC1ass().commandCooldown.get(factionName).containsKey(getFactionOfPlayer(player))) {
+
+        if (CommandCooldown.getCooldown().commandCooldown.get(factionName) != null && !CommandCooldown.getCooldown().commandCooldown.get(factionName).containsKey(getFactionOfPlayer(player))) {
             ArrayList<String> requestedFactionRequests = this.allyRequests.get(factionName);
             requestedFactionRequests.remove(getFactionOfPlayer(player));
             this.allyRequests.put(factionName, requestedFactionRequests);
@@ -486,9 +487,9 @@ public class FactionListener {
 
         if (this.allyRequests.get(factionName).contains(getFactionOfPlayer(player))) {
             player.sendMessage(ChatColor.RED + "You have already sent a request to the faction " + factionName);
-            String minutesOrSeconds = ((CommandCooldown.getC1ass().commandCooldown.get(factionName).get(getFactionOfPlayer(player)) > 60)) ? "minutes" : "seconds";
-            int getTime = ((CommandCooldown.getC1ass().commandCooldown.get(factionName).get(getFactionOfPlayer(player)) > 60)) ?
-                    (CommandCooldown.getC1ass().commandCooldown.get(factionName).get(getFactionOfPlayer(player)) / 60 + 1) : (CommandCooldown.getC1ass().commandCooldown.get(factionName).get(getFactionOfPlayer(player)));
+            String minutesOrSeconds = ((CommandCooldown.getCooldown().commandCooldown.get(factionName).get(getFactionOfPlayer(player)) > 60)) ? "minutes" : "seconds";
+            int getTime = ((CommandCooldown.getCooldown().commandCooldown.get(factionName).get(getFactionOfPlayer(player)) > 60)) ?
+                    (CommandCooldown.getCooldown().commandCooldown.get(factionName).get(getFactionOfPlayer(player)) / 60 + 1) : (CommandCooldown.getCooldown().commandCooldown.get(factionName).get(getFactionOfPlayer(player)));
             player.sendMessage(ChatColor.RED + "Your request will timeout in " + getTime + " " + minutesOrSeconds);
             return;
         }
@@ -498,10 +499,11 @@ public class FactionListener {
             this.allyRequests.put(factionName, factionRequests);
 
             player.sendMessage("You have sent an ally request to " + factionName);
-            player.sendMessage(getAllyRequests().keySet().iterator().next().toString() + " : " + getAllyRequests().values().iterator().next().toString());
+            player.sendMessage(getAllyRequests().keySet().toString() + " : " + getAllyRequests().values().toString());
+//TODO Loop through all values .next() isn't returning all values
+            //TODO Create a new commandcooldown object, calling the CommandCooldown returns a new instance of the object (fucking up things in the constructor)
 
-
-            CommandCooldown.getC1ass().addCooldown(factionName, getFactionOfPlayer(player), 300);
+            CommandCooldown.getCooldown().addCooldown(factionName, getFactionOfPlayer(player), 50);
 
 
             if (factionLeader != null) {
@@ -519,6 +521,9 @@ public class FactionListener {
             this.allyRequests.put(getFactionOfPlayer(player), playerFactionRequests);
 
             setAllies(player, factionName);
+
+            CommandCooldown.getCooldown().removeAndUpdate(getFactionOfPlayer(player), factionName);
+            //TODO Change this
 
 
             if (factionLeader != null) {

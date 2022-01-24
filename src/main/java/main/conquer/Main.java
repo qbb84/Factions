@@ -24,7 +24,7 @@ public final class Main extends JavaPlugin {
 
     private static Main main;
 
-    private FactionListener listener = new FactionListener();
+
 
 
     @Override
@@ -41,7 +41,7 @@ public final class Main extends JavaPlugin {
 
         loadAllyRequestMap();
 
-        CommandCooldown.getC1ass().startCountdown();
+        CommandCooldown.getCooldown().startCountdown();
 
 
     }
@@ -92,13 +92,13 @@ public final class Main extends JavaPlugin {
     public void loadAllyRequestMap() {
         for (String keyName : getCustomConfig().getConfigurationSection("").getKeys(false)) {
             ArrayList<String> list = new ArrayList<>();
-            listener.getAllyRequests().put(keyName, list);
+            FactionListener.getFactionListener().getAllyRequests().put(keyName, list);
             getServer().getConsoleSender().sendMessage(keyName);
 
-            if (listener.getAllyRequests().get(keyName).isEmpty()) {
+            if (FactionListener.getFactionListener().getAllyRequests().get(keyName).isEmpty()) {
                 getServer().getConsoleSender().sendMessage("Empty");
             } else {
-                getServer().getConsoleSender().sendMessage(listener.getAllyRequests().get(keyName).iterator().next());
+                getServer().getConsoleSender().sendMessage(FactionListener.getFactionListener().getAllyRequests().get(keyName).iterator().next());
             }
         }
     }

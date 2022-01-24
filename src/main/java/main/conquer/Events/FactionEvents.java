@@ -19,7 +19,7 @@ public class FactionEvents implements Listener {
     public void onBreak(BlockBreakEvent event) throws IOException {
         FactionListener listener = new FactionListener();
 
-        for (Map.Entry<String, HashMap<String, Integer>> entry : CommandCooldown.getC1ass().commandCooldown.entrySet()) {
+        for (Map.Entry<String, HashMap<String, Integer>> entry : CommandCooldown.getCooldown().commandCooldown.entrySet()) {
             event.getPlayer().sendMessage(entry.getKey() + " : " + entry.getValue());
         }
 
